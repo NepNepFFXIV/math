@@ -30,9 +30,10 @@ def is_prime_brute(n):
 
 # prime_checker is used to check if a number is prime
 def prime_generator(prime_checker=is_prime):
+    yield 2
     n = 1
     while True:
-        n += 1
+        n += 2
         if prime_checker(n):
             yield(n)
 
