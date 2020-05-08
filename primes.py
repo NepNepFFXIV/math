@@ -37,6 +37,13 @@ def prime_generator(prime_checker=is_prime):
         if prime_checker(n):
             yield(n)
 
+def prime_generator_eratosthenes(n=15_000_000): # arbitrary limit
+    multiples = set()
+    for i in range(2, n+1):
+        if i not in multiples:
+            yield i
+            multiples.update(range(i*i, n+1, i))
+
 # All primes less than or equal n - O(n log n)
 @time_elapsed
 def sieve_sundaram(n): 
@@ -59,20 +66,27 @@ def sieve_sundaram(n):
     if is_prime(n): primes.append(n)
     return primes
 
-# All primes less than or equal n - O(n log log n)
+# All primes less than or equal n - O(n log log n) - 
+# Eratosthenes - No Optimization
+# https://en.wikipedia.org/wiki/Sieve_of_Eratosthenes
 @time_elapsed
-def sieve_eratosthenes(n):
-    # marked = [True for i in range(n+1)]
+def sieve_eratosthenes_1(n):
     marked = [True] * (n+1)
-    p = 2
-    while (p*p <= n):
-        # If marked[p] is not changed, then it is a prime
-        if marked[p]: # marked[p] == True
-            # Update all multiplies of p
-            for i in range(p*p, n+1, p):
+    for p in range(2, int(n**0.5)+1):
+        if marked[p]:                       # marked[p] == True            
+            for i in range(p*p, n+1, p):    # Update all multiplies of p
                 marked[i] = False
-        p += 1
+    return [p for p in range(2,n+1) if marked[p]]
 
+# Eratosthenes - Odds optimization
+@time_elapsed
+def sieve_eratosthenes_2(n):
+    marked = [False, True] * (n+2>>1)
+    marked[2] = True
+    for p in range(3, int(n**0.5)+1, 2):
+        if marked[p]:                       # marked[p] == True            
+            for i in range(p*p, n+1, p):    # Update all multiplies of p
+                marked[i] = False
     return [p for p in range(2,n+1) if marked[p]]
 
 # All primes less than or equal n - O(n / (log log n))
@@ -83,9 +97,9 @@ def sieve_atkin(n):
 
 # All primes less than or equal n using prime generator - O(lol)
 @time_elapsed
-def primes_lte_n(n):
+def primes_lte_n(n, generator=prime_generator_eratosthenes):
     nums = []
-    gen = prime_generator()
+    gen = generator()
     m = next(gen)
     while m <= n:
         nums.append(m)
@@ -106,7 +120,7 @@ def prime_factorization(n):
     return result
 
 # All possible pairs of Goldbach's conjecture
-def goldbach(n, sieve=sieve_eratosthenes):
+def goldbach(n, sieve=sieve_eratosthenes_2):
     # We only check even numbers greater than 2
     if n < 2 or n & 1 == 1: return []
 
@@ -120,15 +134,18 @@ def goldbach(n, sieve=sieve_eratosthenes):
     return result
 
 if __name__ == "__main__":
-    from timeit import timeit
-    from itertools import islice
     # n = int(math.pow(10, 7))
-    n = 1_000_000
+    n = 15_000_000
     # print(is_prime(n))
     # print(is_prime_brute(n))
     # print(prime_factorization(n))    
     # print(primes_lte_n(n))
     # print(sieve_sundaram(n))
-    print(sieve_eratosthenes(n)[-1])
+    # sieve_eratosthenes(n)
     # sieve_atkin(n)
     # print(goldbach(n))
+    # print(is_prime(n))
+    # print(is_prime_wheel_factorization(n))
+
+    sieve_eratosthenes_1(n)
+    sieve_eratosthenes_2(n)
