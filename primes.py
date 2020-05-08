@@ -37,12 +37,18 @@ def prime_generator(prime_checker=is_prime):
         if prime_checker(n):
             yield(n)
 
+# See sieve_eratosthenes_2 implementation
 def prime_generator_eratosthenes(n=15_000_000): # arbitrary limit
-    multiples = set()
-    for i in range(2, n+1):
-        if i not in multiples:
-            yield i
-            multiples.update(range(i*i, n+1, i))
+    marked = [False, True] * (n+2>>1)
+    marked[2] = True
+    for p in range(3, int(n**0.5)+1, 2):
+        if marked[p]:                            
+            for i in range(p*p, n+1, 2*p):
+                marked[i] = False
+    yield 2
+    for p in range(3,n+1, 2):
+        if marked[p]:
+            yield p
 
 # All primes less than or equal n - O(n log n)
 @time_elapsed
@@ -87,7 +93,18 @@ def sieve_eratosthenes_2(n):
         if marked[p]:                         # marked[p] == True            
             for i in range(p*p, n+1, 2*p):    # Update all multiplies of p. No need to check for multiple 2 of p hence increase by 2*p each step
                 marked[i] = False
-    return [2] + [p for p in range(3,n+1, 2) if marked[p]]
+    return [2] + [p for p in range(3, n+1, 2) if marked[p]]
+
+# Eratosthenes - Odds optimization with help of Numpy masking to save memmory
+@time_elapsed
+def sieve_eratosthenes_3(n):
+    import numpy as np
+    marked = np.array([False, True] * (n+2>>1))
+    marked[2] = True
+    for p in range(3, int(n**0.5)+1, 2):
+        if marked[p]:
+            marked[p*p : n+1: 2*p] = False
+    return [2] + [p for p in range(3, n+1, 2) if marked[p]]
 
 # All primes less than or equal n - O(n / (log log n))
 @time_elapsed
@@ -135,13 +152,12 @@ def goldbach(n, sieve=sieve_eratosthenes_2):
 
 if __name__ == "__main__":
     # n = int(math.pow(10, 7))
-    n = 15_000_000
+    n = 20_000_000
     # print(is_prime(n))
     # print(is_prime_brute(n))
     # print(prime_factorization(n))    
     # print(primes_lte_n(n))
     # print(sieve_sundaram(n))
-    # sieve_eratosthenes(n)
     # sieve_atkin(n)
     # print(goldbach(n))
     # print(is_prime(n))
@@ -149,3 +165,4 @@ if __name__ == "__main__":
 
     sieve_eratosthenes_1(n)
     sieve_eratosthenes_2(n)
+    sieve_eratosthenes_3(n)
