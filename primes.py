@@ -84,10 +84,10 @@ def sieve_eratosthenes_2(n):
     marked = [False, True] * (n+2>>1)
     marked[2] = True
     for p in range(3, int(n**0.5)+1, 2):
-        if marked[p]:                       # marked[p] == True            
-            for i in range(p*p, n+1, p):    # Update all multiplies of p
+        if marked[p]:                         # marked[p] == True            
+            for i in range(p*p, n+1, 2*p):    # Update all multiplies of p. No need to check for multiple 2 of p hence increase by 2*p each step
                 marked[i] = False
-    return [p for p in range(2,n+1) if marked[p]]
+    return [2] + [p for p in range(3,n+1, 2) if marked[p]]
 
 # All primes less than or equal n - O(n / (log log n))
 @time_elapsed
